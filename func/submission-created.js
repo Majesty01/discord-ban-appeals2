@@ -82,7 +82,6 @@ export async function handler(event, context) {
                 const unbanInfo = {
                     userId: userInfo.id
                 };
-                }];
             }
         }
 
