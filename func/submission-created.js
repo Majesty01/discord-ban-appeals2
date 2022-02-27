@@ -82,15 +82,6 @@ export async function handler(event, context) {
                 const unbanInfo = {
                     userId: userInfo.id
                 };
-    
-                message.components = [{
-                    type: 1,
-                    components: [{
-                        type: 2,
-                        style: 5,
-                        label: "Approve appeal and unban user",
-                        url: `${unbanUrl.toString()}?token=${encodeURIComponent(createJwt(unbanInfo))}`
-                    }]
                 }];
             }
         }
