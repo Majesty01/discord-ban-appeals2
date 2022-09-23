@@ -21,6 +21,7 @@ export async function handler(event, context) {
             banReason: params.get("banReason") || undefined,
             appealText: params.get("appealText") || undefined,
             futureActions: params.get("futureActions") || undefined,
+            level: params.get("level") || undefined,
             token: params.get("token") || undefined
         };
     }
@@ -28,6 +29,7 @@ export async function handler(event, context) {
     if (payload.banReason !== undefined &&
         payload.appealText !== undefined &&
         payload.futureActions !== undefined && 
+        payload.level !== undefined && 
         payload.token !== undefined) {
         
         const userInfo = decodeJwt(payload.token);
@@ -60,6 +62,10 @@ export async function handler(event, context) {
                     {
                         name: "What will you do to avoid being banned in the future?",
                         value: payload.futureActions.slice(0, MAX_EMBED_FIELD_CHARS)
+                    },
+                    {
+                        name: "What estimate level were you before ban?",
+                        value: payload.level.slice(0, MAX_EMBED_FIELD_CHARS)
                     }
                 ]
             }
