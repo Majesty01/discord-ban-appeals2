@@ -42,6 +42,18 @@ export async function handler(event, context) {
                 },
             };
         }
+
+        const hasSubmittedAppeal = await hasUserSubmittedAppeal(userInfo.id);
+        if (hasSubmittedAppeal) {
+            const submissionResult = await logBanAppealSubmission(userInfo.id);
+            const remainingTime = calculateRemainingTime(submissionResult.timestamp);
+            return {
+                statusCode: 303,
+                headers: {
+                    "Location": `/error?msg=${encodeURIComponent(`You have already submitted a ban appeal. You must wait ${formatTime(remainingTime)} before submitting another appeal.`)}`,
+                },
+            };
+        }
         
         const message = {
             embed: {
@@ -151,4 +163,31 @@ async function logBanAppealSubmission(userId) {
             await client.close();
         }
     }
+}
+function calculateRemainingTime(submissionTimestamp) {
+    const currentTime = new Date();
+    const nextSubmissionTime = new Date(submissionTimestamp.getTime() + (21 * 24 * 60 * 60 * 1000));
+    return nextSubmissionTime - currentTime;
+}
+function formatTime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000) % 60;
+    const minutes = Math.floor(milliseconds / (1000 * 60)) % 60;
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60)) % 24;
+    const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+
+    const parts = [];
+    if (days > 0) {
+        parts.push(`${days} day${days > 1 ? 's' : ''}`);
+    }
+    if (hours > 0) {
+        parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+    }
+    if (seconds > 0) {
+        parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+    }
+
+    return parts.join(', ');
 }
