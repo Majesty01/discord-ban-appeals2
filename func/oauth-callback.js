@@ -118,9 +118,9 @@ async function logBanAppealSubmission(userId) {
 
         if (recentSubmission) {
             return { error: "You must wait before submitting another appeal." };
+        } else {
+            return {}; // No error, user can proceed
         }
-        
-        return {};
     } catch (error) {
         console.error('Error log ban appeal submission:', error);
         return { error: "An error occurred while processing your ban appeal submission." };
