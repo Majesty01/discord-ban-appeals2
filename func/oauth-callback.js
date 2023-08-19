@@ -54,7 +54,7 @@ export async function handler(event, context) {
             }
             const user = await getUserInfo(data.access_token);
             if (isBlocked(user.id)) {
-                await logBanAppealSubmission(user.id);
+                const submissionResult = await logBanAppealSubmission(user.id);
                 return {
                     statusCode: 303,
                     headers: {
@@ -101,7 +101,6 @@ export async function handler(event, context) {
 }
 async function logBanAppealSubmission(userId) {
     let client;
-
     try {
         const currentTime = new Date();
         client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
@@ -118,14 +117,13 @@ async function logBanAppealSubmission(userId) {
         });
 
         if (recentSubmission) {
-            return {
-                statusCode: 303,
-                headers: {
-                    "Location": `/error?msg=${encodeURIComponent("You cannot submit ban appeals with this Discord account.")}`,
-                },
+            return { error: "You must wait before submitting another appeal." };
         }
+        
+        return {};
     } catch (error) {
         console.error('Error log ban appeal submission:', error);
+        return { error: "An error occurred while processing your ban appeal submission." };
     } finally {
         if (client) {
             await client.close();
