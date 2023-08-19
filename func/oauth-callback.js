@@ -99,8 +99,8 @@ export async function handler(event, context) {
         };
     }
 }
-async function logBanAppealSubmission(user.id) {
-    let client; // Declare the client variable
+async function logBanAppealSubmission(userId) {
+    let client;
 
     try {
         const currentTime = new Date();
@@ -111,7 +111,6 @@ async function logBanAppealSubmission(user.id) {
         const db = client.db(process.env.MONGODB_DB_NAME);
         const submissions = db.collection('ban_appeal_submissions');
 
-        // Check if the user has submitted an appeal within the last 3 weeks
         const threeWeeksAgo = new Date(currentTime.getTime() - (21 * 24 * 60 * 60 * 1000));
         const recentSubmission = await submissions.findOne({
             userId: userId,
@@ -125,7 +124,6 @@ async function logBanAppealSubmission(user.id) {
         console.error('Error log ban appeal submission:', error);
     } finally {
         if (client) {
-            // Close the connection
             await client.close();
         }
     }
