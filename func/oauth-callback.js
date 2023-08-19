@@ -118,7 +118,11 @@ async function logBanAppealSubmission(userId) {
         });
 
         if (recentSubmission) {
-            throw new Error("You must wait before submitting another appeal.");
+            return {
+                statusCode: 303,
+                headers: {
+                    "Location": `/error?msg=${encodeURIComponent("You cannot submit ban appeals with this Discord account.")}`,
+                },
         }
     } catch (error) {
         console.error('Error log ban appeal submission:', error);
