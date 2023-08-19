@@ -52,7 +52,7 @@ export async function handler(event, context) {
                 console.log(data);
                 throw new Error("Failed to get user access token");
             }
-    
+            await logBanAppealSubmission(user.id);
             const user = await getUserInfo(data.access_token);
             if (isBlocked(user.id)) {
                 return {
