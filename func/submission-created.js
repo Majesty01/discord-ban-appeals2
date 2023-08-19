@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { MongoClient } from 'mongodb';
 
 import { API_ENDPOINT, MAX_EMBED_FIELD_CHARS, MAX_EMBED_FOOTER_CHARS } from "./helpers/discord-helpers.js";
 import { createJwt, decodeJwt } from "./helpers/jwt-helpers.js";
