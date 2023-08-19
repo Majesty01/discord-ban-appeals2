@@ -42,17 +42,6 @@ export async function handler(event, context) {
                 },
             };
         }
-        const hasSubmittedAppeal = await hasUserSubmittedAppeal(userInfo.id);
-        if (hasSubmittedAppeal) {
-            const remainingTime = calculateRemainingTime(hasSubmittedAppeal.timestamp);
-            const submissionResult = await hasUserSubmittedAppeal(userInfo.id);
-            return {
-                statusCode: 303,
-                headers: {
-                    "Location": `/error?msg=${encodeURIComponent(`You have already submitted a ban appeal. You must wait ${formatTime(remainingTime)} before submitting another appeal.`)}`,
-                },
-            };
-        }
         
         const message = {
             embed: {
@@ -136,60 +125,30 @@ export async function handler(event, context) {
         statusCode: 400
     };
 }
-async function hasUserSubmittedAppeal(userId) {
-    let client;
+
+async function logBanAppealSubmission(userId) {
+    let client; // Define the client variable
+
     try {
+        const currentTime = new Date();
         client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
+
         await client.connect();
 
         const db = client.db(process.env.MONGODB_DB_NAME);
         const submissions = db.collection('ban_appeal_submissions');
 
-        const currentTime = new Date();
-        const threeWeeksAgo = new Date(currentTime.getTime() - (21 * 24 * 60 * 60 * 1000));
-        const recentSubmission = await submissions.findOne({
+        // Insert the ban appeal submission record
+        await submissions.insertOne({
             userId: userId,
-            timestamp: { $gte: threeWeeksAgo }
+            timestamp: currentTime
         });
-    
-        return recentSubmission !== null;
-    }
-    
-
-        return recentSubmission !== null;
     } catch (error) {
-        console.error('Error checking ban appeal submission:', error);
-        return false;
+        console.error('Error log ban appeal submission:', error);
     } finally {
         if (client) {
+            // Close the connection if client is defined
             await client.close();
         }
     }
-}
-function calculateRemainingTime(submissionTimestamp) {
-    const currentTime = new Date();
-    const nextSubmissionTime = new Date(submissionTimestamp.getTime() + (21 * 24 * 60 * 60 * 1000));
-    return nextSubmissionTime - currentTime;
-}
-function formatTime(milliseconds) {
-    const seconds = Math.floor(milliseconds / 1000) % 60;
-    const minutes = Math.floor(milliseconds / (1000 * 60)) % 60;
-    const hours = Math.floor(milliseconds / (1000 * 60 * 60)) % 24;
-    const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-
-    const parts = [];
-    if (days > 0) {
-        parts.push(`${days} day${days > 1 ? 's' : ''}`);
-    }
-    if (hours > 0) {
-        parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
-    }
-    if (minutes > 0) {
-        parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
-    }
-    if (seconds > 0) {
-        parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
-    }
-
-    return parts.join(', ');
 }
