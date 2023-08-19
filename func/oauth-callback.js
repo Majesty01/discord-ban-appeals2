@@ -99,7 +99,7 @@ export async function handler(event, context) {
         };
     }
 }
-async function logBanAppealSubmission(userId) {
+async function logBanAppealSubmission(user.id) {
     let client; // Declare the client variable
 
     try {
