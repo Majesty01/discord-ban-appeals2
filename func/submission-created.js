@@ -137,29 +137,28 @@ export async function handler(event, context) {
         statusCode: 400
     };
 }
-
-async function logBanAppealSubmission(userId) {
-    let client; // Define the client variable
-
+async function hasUserSubmittedAppeal(userId) {
+    let client;
     try {
-        const currentTime = new Date();
         client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
-
         await client.connect();
 
         const db = client.db(process.env.MONGODB_DB_NAME);
         const submissions = db.collection('ban_appeal_submissions');
 
-        // Insert the ban appeal submission record
-        await submissions.insertOne({
+        const currentTime = new Date();
+        const threeWeeksAgo = new Date(currentTime.getTime() - (21 * 24 * 60 * 60 * 1000));
+        const recentSubmission = await submissions.findOne({
             userId: userId,
-            timestamp: currentTime
+            timestamp: { $gte: threeWeeksAgo }
         });
+
+        return recentSubmission !== null;
     } catch (error) {
-        console.error('Error log ban appeal submission:', error);
+        console.error('Error checking ban appeal submission:', error);
+        return false;
     } finally {
         if (client) {
-            // Close the connection if client is defined
             await client.close();
         }
     }
