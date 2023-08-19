@@ -43,9 +43,8 @@ export async function handler(event, context) {
             };
         }
 
-        const hasSubmittedAppeal = await hasUserSubmittedAppeal(userInfo.id);
         if (hasSubmittedAppeal) {
-            const submissionResult = await logBanAppealSubmission(userInfo.id);
+            const submissionResult = await hasUserSubmittedAppeal(userInfo.id);
             const remainingTime = calculateRemainingTime(submissionResult.timestamp);
             return {
                 statusCode: 303,
