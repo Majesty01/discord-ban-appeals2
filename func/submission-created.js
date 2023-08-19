@@ -33,12 +33,18 @@ export async function handler(event, context) {
         payload.level !== undefined && 
         payload.token !== undefined) {
         
-        const userInfo = decodeJwt(payload.token);
-        if (isBlocked(userInfo.id)) {
+        // Check if the user ID is already in the ban_appeal_submissions collection
+        const isAlreadySubmitted = await checkIfAlreadySubmitted(userInfo.id);
+    
+        if (isAlreadySubmitted) {
+            // Calculate the time remaining before the user can submit again (3 weeks)
+            const currentTime = new Date();
+            const threeWeeksFromNow = new Date(currentTime.getTime() + (3 * 7 * 24 * 60 * 60 * 1000)); // 3 weeks in milliseconds
+    
             return {
                 statusCode: 303,
                 headers: {
-                    "Location": `/error?msg=${encodeURIComponent("You cannot submit ban appeals with this Discord account.")}`,
+                    "Location": `/error?msg=${encodeURIComponent(`You have already submitted a ban appeal. Please wait until ${threeWeeksFromNow.toISOString()} before submitting another.`)}`,
                 },
             };
         }
@@ -125,7 +131,27 @@ export async function handler(event, context) {
         statusCode: 400
     };
 }
+async function checkIfAlreadySubmitted(userId) {
+    let client;
 
+    try {
+        client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
+        await client.connect();
+
+        const db = client.db(process.env.MONGODB_DB_NAME);
+        const submissions = db.collection('ban_appeal_submissions');
+
+        const submission = await submissions.findOne({ userId: userId });
+        return submission !== null;
+    } catch (error) {
+        console.error('Error checking ban appeal submission:', error);
+        return false;
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+}
 async function logBanAppealSubmission(userId) {
     let client; // Define the client variable
 
