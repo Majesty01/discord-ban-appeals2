@@ -45,8 +45,17 @@ export async function handler(event, context) {
                     scope: "identify"
                 })
             });
+
+            const data = await result.json();
+    
+            if (!result.ok) {
+                console.log(data);
+                throw new Error("Failed to get user access token");
+            }
+            const user = await getUserInfo(data.access_token);
+            // Call logBanAppealSubmission after fetching user info
             const submissionResult = await logBanAppealSubmission(user.id);
-            
+
             if (submissionResult.error) {
                 return {
                     statusCode: 303,
@@ -55,13 +64,6 @@ export async function handler(event, context) {
                     },
                 };
             }
-            const data = await result.json();
-    
-            if (!result.ok) {
-                console.log(data);
-                throw new Error("Failed to get user access token");
-            }
-            const user = await getUserInfo(data.access_token);
             if (isBlocked(user.id)) {
                 return {
                     statusCode: 303,
