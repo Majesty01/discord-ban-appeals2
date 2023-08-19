@@ -44,8 +44,8 @@ export async function handler(event, context) {
         }
         const hasSubmittedAppeal = await hasUserSubmittedAppeal(userInfo.id);
         if (hasSubmittedAppeal) {
+            const remainingTime = calculateRemainingTime(hasSubmittedAppeal.timestamp);
             const submissionResult = await hasUserSubmittedAppeal(userInfo.id);
-            const remainingTime = calculateRemainingTime(submissionResult.timestamp);
             return {
                 statusCode: 303,
                 headers: {
@@ -151,6 +151,10 @@ async function hasUserSubmittedAppeal(userId) {
             userId: userId,
             timestamp: { $gte: threeWeeksAgo }
         });
+    
+        return recentSubmission !== null;
+    }
+    
 
         return recentSubmission !== null;
     } catch (error) {
