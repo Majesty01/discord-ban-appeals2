@@ -126,7 +126,9 @@ async function logBanAppealSubmission(userId) {
         });
 
         if (recentSubmission) {
-            return { error: "You must wait before submitting another appeal." };
+            const timeUntilNextSubmission = new Date(recentSubmission.timestamp.getTime() + (21 * 24 * 60 * 60 * 1000));
+            const remainingTime = timeUntilNextSubmission - currentTime;
+            return { error: `You must wait ${formatTime(remainingTime)} before submitting another appeal.` };
         } else {
             return {}; // No error, user can proceed
         }
@@ -138,4 +140,27 @@ async function logBanAppealSubmission(userId) {
             await client.close();
         }
     }
+}
+
+function formatTime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000) % 60;
+    const minutes = Math.floor(milliseconds / (1000 * 60)) % 60;
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60)) % 24;
+    const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+
+    const parts = [];
+    if (days > 0) {
+        parts.push(`${days} day${days > 1 ? 's' : ''}`);
+    }
+    if (hours > 0) {
+        parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+    }
+    if (seconds > 0) {
+        parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+    }
+
+    return parts.join(', ');
 }
