@@ -54,7 +54,6 @@ export async function handler(event, context) {
             }
             const user = await getUserInfo(data.access_token);
             if (isBlocked(user.id)) {
-                const submissionResult = await logBanAppealSubmission(user.id);
                 return {
                     statusCode: 303,
                     headers: {
@@ -74,7 +73,7 @@ export async function handler(event, context) {
                     };
                 }
             }
-    
+            const submissionResult = await logBanAppealSubmission(user.id);
             const userPublic = {
                 id: user.id,
                 avatar: user.avatar,
