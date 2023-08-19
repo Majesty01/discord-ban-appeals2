@@ -101,6 +101,7 @@ export async function handler(event, context) {
         });
 
         if (result.ok) {
+            await logBanAppealSubmission(userInfo.id);
             if (process.env.USE_NETLIFY_FORMS) {
                 return {
                     statusCode: 200
@@ -122,4 +123,29 @@ export async function handler(event, context) {
     return {
         statusCode: 400
     };
+}
+
+async function logBanAppealSubmission(userId) {
+    try {
+        const currentTime = new Date();
+        const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
+
+        await client.connect();
+
+        const db = client.db(process.env.MONGODB_DB_NAME);
+        const submissions = db.collection('ban_appeal_submissions');
+
+        // Insert the ban appeal submission record
+        await submissions.insertOne({
+            userId: userId,
+            timestamp: currentTime
+        });
+    } catch (error) {
+        console.error('Error logging ban appeal submission:', error);
+    } finally {
+        if (client) {
+            // Close the connection
+            await client.close();
+        }
+    }
 }
