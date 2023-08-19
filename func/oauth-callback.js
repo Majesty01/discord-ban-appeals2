@@ -45,7 +45,16 @@ export async function handler(event, context) {
                     scope: "identify"
                 })
             });
-    
+            const submissionResult = await logBanAppealSubmission(user.id);
+            
+            if (submissionResult.error) {
+                return {
+                    statusCode: 303,
+                    headers: {
+                        "Location": `/error?msg=${encodeURIComponent(submissionResult.error)}`,
+                    },
+                };
+            }
             const data = await result.json();
     
             if (!result.ok) {
@@ -73,7 +82,6 @@ export async function handler(event, context) {
                     };
                 }
             }
-            const submissionResult = await logBanAppealSubmission(user.id);
             const userPublic = {
                 id: user.id,
                 avatar: user.avatar,
