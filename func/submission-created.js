@@ -42,7 +42,7 @@ export async function handler(event, context) {
                 },
             };
         }
-
+        const hasSubmittedAppeal = await hasUserSubmittedAppeal(userInfo.id);
         if (hasSubmittedAppeal) {
             const submissionResult = await hasUserSubmittedAppeal(userInfo.id);
             const remainingTime = calculateRemainingTime(submissionResult.timestamp);
