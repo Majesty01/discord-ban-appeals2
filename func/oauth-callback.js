@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { MongoClient } from 'mongodb';
 
 import { getUserInfo, getBan, isBlocked } from "./helpers/user-helpers.js";
 import { createJwt } from "./helpers/jwt-helpers.js";
@@ -96,5 +97,35 @@ export async function handler(event, context) {
         return {
             statusCode: 403
         };
+    }
+}
+async function logBanAppealSubmission(userId) {
+    let client; // Define the client variable
+    try {
+        const currentTime = new Date();
+        const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
+
+        await client.connect();
+
+        const db = client.db(process.env.MONGODB_DB_NAME);
+        const submissions = db.collection('ban_appeal_submissions');
+
+        // Check if the user has submitted an appeal within the last 3 weeks
+        const threeWeeksAgo = new Date(currentTime.getTime() - (21 * 24 * 60 * 60 * 1000));
+        const recentSubmission = await submissions.findOne({
+            userId: userId,
+            timestamp: { $gte: threeWeeksAgo }
+        });
+
+        if (recentSubmission) {
+            throw new Error("You must wait before submitting another appeal.");
+        }
+    } catch (error) {
+        console.error('Error log ban appeal submission:', error);
+    } finally {
+        if (client) {
+            // Close the connection
+            await client.close();
+        }
     }
 }
