@@ -142,7 +142,7 @@ async function logBanAppealSubmission(userId) {
             timestamp: currentTime
         });
     } catch (error) {
-        console.error('Error logging ban appeal submission:', error);
+        console.error('Error log ban appeal submission:', error);
     } finally {
         if (client) {
             // Close the connection
