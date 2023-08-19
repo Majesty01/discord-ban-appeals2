@@ -100,10 +100,11 @@ export async function handler(event, context) {
     }
 }
 async function logBanAppealSubmission(userId) {
-    let client; // Define the client variable
+    let client; // Declare the client variable
+
     try {
         const currentTime = new Date();
-        const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
+        client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true });
 
         await client.connect();
 
