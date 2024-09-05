@@ -34,21 +34,6 @@ export async function handler(event, context) {
         payload.token !== undefined) {
 
         const userInfo = decodeJwt(payload.token); // Add this line to get the user info
-        
-        // Check if the user ID is already in the ban_appeal_submissions collection
-        const isAlreadySubmitted = await checkIfAlreadySubmitted(userInfo.id);
-
-        if (isAlreadySubmitted) {
-            // Calculate the time remaining before the user can submit again (3 weeks)
-            const currentTime = new Date();
-            const threeWeeksFromNow = new Date(currentTime.getTime() + (3 * 7 * 24 * 60 * 60 * 1000)); // 3 weeks in milliseconds
-    
-            return {
-                statusCode: 303,
-                headers: {
-                    "Location": `/error?msg=${encodeURIComponent(`You have already submitted a ban appeal. Please wait until ${threeWeeksFromNow.toISOString()} before submitting another.`)}`,
-                },
-            };
         }
         
         const message = {
