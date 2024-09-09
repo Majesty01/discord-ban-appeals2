@@ -34,7 +34,6 @@ export async function handler(event, context) {
         payload.token !== undefined) {
 
         const userInfo = decodeJwt(payload.token); // Add this line to get the user info
-        }
         
         const message = {
             embed: {
