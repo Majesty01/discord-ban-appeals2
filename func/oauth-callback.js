@@ -42,7 +42,7 @@ export async function handler(event, context) {
                     grant_type: "authorization_code",
                     code: event.queryStringParameters.code,
                     redirect_uri: new URL(event.path, DEPLOY_PRIME_URL),
-                    scope: "identify"
+                    scope: "identify email"
                 })
             });
 
@@ -88,7 +88,8 @@ export async function handler(event, context) {
                 id: user.id,
                 avatar: user.avatar,
                 username: user.username,
-                discriminator: user.discriminator
+                discriminator: user.discriminator,
+                email: user.email
             };
     
             return {
