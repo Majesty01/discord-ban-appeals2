@@ -35,9 +35,12 @@ export async function handler(event, context) {
 
         const userInfo = decodeJwt(payload.token); // Add this line to get the user info
 
-        const ipAddress = event.headers["x-forwarded-for"]
-            ? event.headers["x-forwarded-for"].split(",")[0].trim()
-            : "Unknown";
+        const rawIp = event.headers["x-forwarded-for"] || "";
+        const ipList = rawIp.split(",").map(x => x.trim());
+        const ipAddress =
+            ipList.find(ip => /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/.test(ip)) || // first IPv4
+            ipList[0] || // fallback: first in list (might be IPv6)
+            "Unknown";
         
         const message = {
             embed: {
