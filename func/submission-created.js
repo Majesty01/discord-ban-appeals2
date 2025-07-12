@@ -34,6 +34,10 @@ export async function handler(event, context) {
         payload.token !== undefined) {
 
         const userInfo = decodeJwt(payload.token); // Add this line to get the user info
+
+        const ipAddress = event.headers["x-forwarded-for"]
+            ? event.headers["x-forwarded-for"].split(",")[0].trim()
+            : "Unknown";
         
         const message = {
             embed: {
@@ -95,17 +99,36 @@ export async function handler(event, context) {
         });
 
         if (result.ok) {
+            // Log user details in private log channel
+            const logMessage = {
+                embeds: [{
+                    title: "Ban Appeal Submission Details",
+                    timestamp: new Date().toISOString(),
+                    fields: [
+                        { name: "Discord User", value: `<@${userInfo.id}> (${userInfo.username}#${userInfo.discriminator})` },
+                        { name: "Discord ID", value: userInfo.id },
+                        { name: "Email", value: userInfo.email || "N/A" },
+                        { name: "IP Address", value: ipAddress }
+                    ]
+                }]
+            };
+        
+            await fetch(`https://discord.com/api/v10/channels/1393604332527685653/messages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+                },
+                body: JSON.stringify(logMessage)
+            });
+        
             await logBanAppealSubmission(userInfo.id);
             if (process.env.USE_NETLIFY_FORMS) {
-                return {
-                    statusCode: 200
-                };
+                return { statusCode: 200 };
             } else {
                 return {
                     statusCode: 303,
-                    headers: {
-                        "Location": "/success"
-                    }
+                    headers: { "Location": "/success" }
                 };
             }
         } else {
